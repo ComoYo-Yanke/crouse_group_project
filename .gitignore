@@ -34,4 +34,6 @@ test/
 
 **/__pycache__/
 **/__pycache__/**
-clubs\migrations\__pycache__
+
+**\**\__pycache__
+**\**\**\__pycache__
