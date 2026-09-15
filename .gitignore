@@ -31,3 +31,7 @@ application.yaml.bak.7
 
 test/
 .sql
+
+**/__pycache__/
+**/__pycache__/**
+clubs\migrations\__pycache__
