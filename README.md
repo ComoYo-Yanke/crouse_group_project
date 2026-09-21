@@ -1,5 +1,7 @@
 # 小组项目
 
+## **danger** 此分支不可直接提交！！！
+
 - **重要！！！** 开发前请确保掌握 git 语法和开源许可协议，请查看 <a href="./gitcommit.md">git开发手册</a>、<a href="./branchRule.md">分支规范</a> 和 <a href="./LICENSE">许可协议</a>
 
 项目名称：私人营养师系统
