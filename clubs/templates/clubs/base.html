@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}社团管理系统{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'clubs/style.css' %}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{% url 'club-index' %}">校园社团管理</a>
+        <nav>
+            <a href="{% url 'club-index' %}">社团列表</a>
+            <a href="{% url 'club-create' %}">新增社团</a>
+            <a href="/admin/">管理后台</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

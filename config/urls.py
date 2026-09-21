@@ -23,5 +23,5 @@ admin.site.index_title = '社团管理员后台'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('clubs.urls')),
+    path('', include('clubs.urls')),
 ]

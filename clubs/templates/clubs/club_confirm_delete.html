@@ -1,0 +1,17 @@
+{% extends "clubs/base.html" %}
+
+{% block title %}删除 {{ club.name }}{% endblock %}
+
+{% block content %}
+<section class="panel danger-panel">
+    <h1>确认删除社团</h1>
+    <p>即将删除「{{ club.name }}」。关联的社团管理员记录也会一并删除，此操作不可恢复。</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="actions">
+            <button class="btn danger" type="submit">确认删除</button>
+            <a class="btn ghost" href="{% url 'club-detail' club.pk %}">取消</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

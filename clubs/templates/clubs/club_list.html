@@ -1,0 +1,45 @@
+{% extends "clubs/base.html" %}
+
+{% block title %}社团列表{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <h1>社团列表</h1>
+        <p>查看全部社团信息，并进行新增、编辑或删除。</p>
+    </div>
+    <a class="btn primary" href="{% url 'club-create' %}">新增社团</a>
+</section>
+
+{% if clubs %}
+<div class="card-grid">
+    {% for club in clubs %}
+    <article class="card">
+        <div class="card-top">
+            <h2><a href="{% url 'club-detail' club.pk %}">{{ club.name }}</a></h2>
+            <span class="tag">{{ club.category }}</span>
+        </div>
+        <p class="muted">成立于 {{ club.founded_date }} · {{ club.location|default:"地点待定" }}</p>
+        <p>{{ club.description|truncatechars:80 }}</p>
+        <p class="muted">管理员：
+            {% for admin in club.administrators.all %}
+                {{ admin.real_name }}{% if not forloop.last %}、{% endif %}
+            {% empty %}
+                暂无
+            {% endfor %}
+        </p>
+        <div class="actions">
+            <a class="btn ghost" href="{% url 'club-detail' club.pk %}">详情</a>
+            <a class="btn ghost" href="{% url 'club-update' club.pk %}">编辑</a>
+            <a class="btn danger" href="{% url 'club-delete' club.pk %}">删除</a>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+    <p>还没有社团数据。</p>
+    <a class="btn primary" href="{% url 'club-create' %}">创建第一个社团</a>
+</div>
+{% endif %}
+{% endblock %}

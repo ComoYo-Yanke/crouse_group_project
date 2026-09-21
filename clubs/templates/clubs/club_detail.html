@@ -1,0 +1,55 @@
+{% extends "clubs/base.html" %}
+
+{% block title %}{{ club.name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <h1>{{ club.name }}</h1>
+        <p>{{ club.category }} · 成立于 {{ club.founded_date }}</p>
+    </div>
+    <div class="actions">
+        <a class="btn ghost" href="{% url 'club-update' club.pk %}">编辑</a>
+        <a class="btn danger" href="{% url 'club-delete' club.pk %}">删除</a>
+    </div>
+</section>
+
+<article class="panel">
+    <h2>社团信息</h2>
+    <dl class="info-list">
+        <dt>社团名称</dt><dd>{{ club.name }}</dd>
+        <dt>社团类型</dt><dd>{{ club.category }}</dd>
+        <dt>成立日期</dt><dd>{{ club.founded_date }}</dd>
+        <dt>活动地点</dt><dd>{{ club.location|default:"未填写" }}</dd>
+        <dt>社团介绍</dt><dd>{{ club.description }}</dd>
+    </dl>
+</article>
+
+<article class="panel">
+    <h2>管理员信息</h2>
+    {% if club.administrators.all %}
+    <table>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>后台账号</th>
+                <th>电话</th>
+                <th>邮箱</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for admin in club.administrators.all %}
+            <tr>
+                <td>{{ admin.real_name }}</td>
+                <td>{{ admin.user.username }}</td>
+                <td>{{ admin.phone }}</td>
+                <td>{{ admin.email }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">该社团暂未绑定管理员。</p>
+    {% endif %}
+</article>
+{% endblock %}
