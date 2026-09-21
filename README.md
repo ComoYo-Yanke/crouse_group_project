@@ -18,14 +18,14 @@
 
 | 文档 | 说明 |
 | ---- | ---- |
-| <a href="./need.md">需求分析</a> | 功能需求、用例、验收标准 |
-| <a href="./api.md">接口文档</a> | SpringBoot + FastAPI 接口定义 |
-| <a href="./sql.md">数据库设计</a> | 表结构、ER关系、建表SQL |
-| <a href="./test.md">测试文档</a> | 测试用例、AI效果测试 |
-| <a href="./分工.md">分工文档</a> | 成员职责、周计划 |
-| <a href="./设想方向.md">设想方向</a> | 项目背景与目标 |
-| <a href="./答辩大纲.md">答辩大纲</a> | PPT结构与答辩要点 |
-| <a href="./演示脚本.md">演示脚本</a> | 现场演示流程 |
+| <a href="./doc/need.md">需求分析</a> | 功能需求、用例、验收标准 |
+| <a href="./doc/api.md">接口文档</a> | SpringBoot + FastAPI 接口定义 |
+| <a href="./doc/sql.md">数据库设计</a> | 表结构、ER关系、建表SQL |
+| <a href="./doc/test.md">测试文档</a> | 测试用例、AI效果测试 |
+| <a href="./doc/分工.md">分工文档</a> | 成员职责、周计划 |
+| <a href="./doc/设想方向.md">设想方向</a> | 项目背景与目标 |
+| <a href="./doc/答辩大纲.md">答辩大纲</a> | PPT结构与答辩要点 |
+| <a href="./doc/演示脚本.md">演示脚本</a> | 现场演示流程 |
 
 ## 协作规范
 
