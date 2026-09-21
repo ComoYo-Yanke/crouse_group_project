@@ -1,0 +1,58 @@
+<view class="page">
+
+  <!-- 搜索框 -->
+  <view class="search">
+    <input
+      class="search-input"
+      value="{{keyword}}"
+      placeholder="搜索社团名称 / 类型"
+      placeholder-class="search-ph"
+      confirm-type="search"
+      bindinput="onSearchInput"
+    />
+    <view wx:if="{{keyword}}" class="search-clear" bindtap="onClear">✕</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="state">正在加载…</view>
+
+  <!-- 加载失败 -->
+  <view wx:elif="{{error}}" class="state">
+    <view>{{error}}</view>
+    <view class="state-btn" bindtap="load">重试</view>
+  </view>
+
+  <!-- 空结果 -->
+  <view wx:elif="{{filtered.length === 0}}" class="state">
+    {{keyword ? '没有匹配的社团' : '还没有社团数据'}}
+  </view>
+
+  <!-- 列表 -->
+  <view wx:else>
+    <view class="count">共 {{filtered.length}} 个社团</view>
+    <view
+      class="card club"
+      wx:for="{{filtered}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="goDetail"
+    >
+      <view class="avatar">{{item.initial}}</view>
+      <view class="club-main">
+        <view class="club-top">
+          <text class="club-name">{{item.name}}</text>
+          <text class="tag">{{item.category}}</text>
+        </view>
+        <view class="club-desc">{{item.description}}</view>
+        <view class="club-meta">
+          <text>📍 {{item.location}}</text>
+          <text wx:if="{{item.admins.length}}">👤 {{item.admins[0].realName}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新增社团 -->
+  <view class="fab" bindtap="goCreate">＋</view>
+
+</view>

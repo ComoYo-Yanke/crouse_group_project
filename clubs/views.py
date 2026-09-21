@@ -1,6 +1,9 @@
+import json
+
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse_lazy
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from .forms import ClubForm
@@ -29,18 +32,75 @@ def serialize_club(club):
     }
 
 
-def club_list(request):
-    if request.method != 'GET':
-        return JsonResponse({'detail': '只支持 GET 请求'}, status=405)
+def json_response(data, status=200):
+    # ensure_ascii=False 让中文原样输出，小程序里不用再解转义
+    return JsonResponse(data, status=status, json_dumps_params={'ensure_ascii': False})
 
-    clubs = [
-        serialize_club(club)
-        for club in Club.objects.prefetch_related('administrators__user').all()
-    ]
-    return JsonResponse({
-        'count': len(clubs),
-        'results': clubs,
-    }, json_dumps_params={'ensure_ascii': False})
+
+def parse_body(request):
+    """解析 JSON 请求体，格式不对返回 None。"""
+    try:
+        return json.loads(request.body.decode('utf-8') or '{}')
+    except (ValueError, UnicodeDecodeError):
+        return None
+
+
+def form_errors(form):
+    """把 Django 表单错误整理成 {字段: [错误信息]}，方便小程序展示。"""
+    return {field: [str(e) for e in errs] for field, errs in form.errors.items()}
+
+
+@csrf_exempt
+def club_list(request):
+    if request.method == 'GET':
+        clubs = [
+            serialize_club(club)
+            for club in Club.objects.prefetch_related('administrators__user').order_by('id')
+        ]
+        return json_response({'count': len(clubs), 'results': clubs})
+
+    if request.method == 'POST':
+        data = parse_body(request)
+        if data is None:
+            return json_response({'detail': '请求体不是合法的 JSON'}, status=400)
+
+        form = ClubForm(data)
+        if not form.is_valid():
+            return json_response(
+                {'detail': '表单校验失败', 'errors': form_errors(form)}, status=400
+            )
+        return json_response(serialize_club(form.save()), status=201)
+
+    return json_response({'detail': '只支持 GET / POST 请求'}, status=405)
+
+
+@csrf_exempt
+def club_detail_api(request, pk):
+    club = Club.objects.filter(pk=pk).first()
+    if club is None:
+        return json_response({'detail': '社团不存在'}, status=404)
+
+    if request.method == 'GET':
+        return json_response(serialize_club(club))
+
+    if request.method in ('PUT', 'PATCH'):
+        data = parse_body(request)
+        if data is None:
+            return json_response({'detail': '请求体不是合法的 JSON'}, status=400)
+
+        form = ClubForm(data, instance=club)
+        if not form.is_valid():
+            return json_response(
+                {'detail': '表单校验失败', 'errors': form_errors(form)}, status=400
+            )
+        return json_response(serialize_club(form.save()))
+
+    if request.method == 'DELETE':
+        name = club.name
+        club.delete()
+        return json_response({'detail': f'已删除社团「{name}」'})
+
+    return json_response({'detail': '只支持 GET / PUT / DELETE 请求'}, status=405)
 
 
 class ClubListView(ListView):

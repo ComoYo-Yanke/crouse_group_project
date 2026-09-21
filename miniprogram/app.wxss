@@ -1,0 +1,57 @@
+page {
+  --primary: #3b7cff;
+  --text: #1f2329;
+  --text-sub: #8a8f99;
+  --bg: #f2f3f5;
+  --card: #ffffff;
+
+  background: var(--bg);
+  color: var(--text);
+  font-size: 28rpx;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 24rpx 24rpx calc(48rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+/* 通用卡片 */
+.card {
+  background: var(--card);
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+/* 类型标签 */
+.tag {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 100rpx;
+  font-size: 22rpx;
+  color: var(--primary);
+  background: rgba(59, 124, 255, 0.1);
+}
+
+/* 加载中 / 空 / 出错 的占位块 */
+.state {
+  padding: 160rpx 40rpx;
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 28rpx;
+}
+
+.state-btn {
+  display: inline-block;
+  margin-top: 32rpx;
+  padding: 0 48rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  font-size: 28rpx;
+  color: #fff;
+  background: var(--primary);
+  border-radius: 100rpx;
+}

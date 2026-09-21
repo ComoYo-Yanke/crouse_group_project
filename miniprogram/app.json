@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/detail/detail",
+    "pages/edit/edit"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#3b7cff",
+    "navigationBarTitleText": "社团",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f2f3f5"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

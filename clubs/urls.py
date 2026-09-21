@@ -9,4 +9,5 @@ urlpatterns = [
     path('clubs/<int:pk>/edit/', views.ClubUpdateView.as_view(), name='club-update'),
     path('clubs/<int:pk>/delete/', views.ClubDeleteView.as_view(), name='club-delete'),
     path('api/clubs/', views.club_list, name='club-list'),
+    path('api/clubs/<int:pk>/', views.club_detail_api, name='club-detail-api'),
 ]

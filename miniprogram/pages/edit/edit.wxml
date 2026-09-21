@@ -1,0 +1,80 @@
+<view class="page">
+
+  <view wx:if="{{loading}}" class="state">正在加载…</view>
+
+  <view wx:elif="{{error}}" class="state">
+    <view>{{error}}</view>
+    <view class="state-btn" bindtap="load">重试</view>
+  </view>
+
+  <block wx:else>
+    <view class="card">
+      <view class="field">
+        <text class="label">社团名称 <text class="req">*</text></text>
+        <input
+          class="input"
+          value="{{form.name}}"
+          data-field="name"
+          placeholder="例如：篮球社"
+          placeholder-class="ph"
+          maxlength="100"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="field">
+        <text class="label">社团类型 <text class="req">*</text></text>
+        <input
+          class="input"
+          value="{{form.category}}"
+          data-field="category"
+          placeholder="例如：体育、文艺、公益"
+          placeholder-class="ph"
+          maxlength="50"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="field">
+        <text class="label">成立日期 <text class="req">*</text></text>
+        <picker mode="date" value="{{form.foundedDate}}" bindchange="onDateChange">
+          <view class="input picker">
+            <text wx:if="{{form.foundedDate}}">{{form.foundedDate}}</text>
+            <text wx:else class="ph">请选择日期</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="field">
+        <text class="label">活动地点</text>
+        <input
+          class="input"
+          value="{{form.location}}"
+          data-field="location"
+          placeholder="例如：体育馆一楼（可不填）"
+          placeholder-class="ph"
+          maxlength="100"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="field field-last">
+        <text class="label">社团简介 <text class="req">*</text></text>
+        <textarea
+          class="textarea"
+          value="{{form.description}}"
+          data-field="description"
+          placeholder="介绍社团宗旨、活动与招新信息"
+          placeholder-class="ph"
+          maxlength="500"
+          bindinput="onInput"
+        />
+      </view>
+    </view>
+
+    <view class="submit {{saving ? 'submit-disabled' : ''}}" bindtap="onSubmit">
+      {{saving ? '提交中…' : (isEdit ? '保存修改' : '创建社团')}}
+    </view>
+  </block>
+
+</view>

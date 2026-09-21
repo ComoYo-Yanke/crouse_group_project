@@ -1,0 +1,114 @@
+.hero {
+  padding: 40rpx 0 48rpx;
+  text-align: center;
+}
+
+.hero-avatar {
+  width: 128rpx;
+  height: 128rpx;
+  margin: 0 auto 24rpx;
+  border-radius: 36rpx;
+  background: linear-gradient(135deg, #3b7cff, #6aa1ff);
+  color: #fff;
+  font-size: 56rpx;
+  font-weight: 600;
+  line-height: 128rpx;
+}
+
+.hero-name {
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 16rpx 0;
+}
+
+.row-label {
+  color: var(--text-sub);
+  font-size: 28rpx;
+}
+
+.row-value {
+  font-size: 28rpx;
+  max-width: 60%;
+  text-align: right;
+}
+
+.desc {
+  font-size: 28rpx;
+  line-height: 46rpx;
+  color: #4a4f57;
+  white-space: pre-wrap;
+}
+
+.admin {
+  padding: 20rpx 0;
+  border-top: 1rpx solid #f0f1f3;
+}
+
+.admin:first-of-type {
+  border-top: none;
+}
+
+.admin-top {
+  margin-bottom: 12rpx;
+}
+
+.admin-name {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.admin-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 8rpx 0;
+}
+
+.admin-key {
+  color: var(--text-sub);
+  font-size: 26rpx;
+}
+
+.admin-val {
+  font-size: 26rpx;
+}
+
+.link {
+  color: var(--primary);
+}
+
+.actions {
+  display: flex;
+  gap: 24rpx;
+  margin-top: 12rpx;
+}
+
+.btn {
+  flex: 1;
+  height: 92rpx;
+  line-height: 92rpx;
+  text-align: center;
+  font-size: 32rpx;
+  border-radius: 100rpx;
+}
+
+.btn-primary {
+  color: #fff;
+  background: var(--primary);
+}
+
+.btn-danger {
+  color: #e54545;
+  background: rgba(229, 69, 69, 0.08);
+}

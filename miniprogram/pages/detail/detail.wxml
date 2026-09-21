@@ -1,0 +1,76 @@
+<view class="page">
+
+  <view wx:if="{{loading}}" class="state">正在加载…</view>
+
+  <view wx:elif="{{error}}" class="state">
+    <view>{{error}}</view>
+    <view class="state-btn" bindtap="load">重试</view>
+  </view>
+
+  <block wx:elif="{{club}}">
+
+    <!-- 头部 -->
+    <view class="hero">
+      <view class="hero-avatar">{{club.initial}}</view>
+      <view class="hero-name">{{club.name}}</view>
+      <view class="tag">{{club.category}}</view>
+    </view>
+
+    <!-- 基本信息 -->
+    <view class="card">
+      <view class="row">
+        <text class="row-label">成立日期</text>
+        <text class="row-value">{{club.foundedDate || '未填写'}}</text>
+      </view>
+      <view class="row">
+        <text class="row-label">活动地点</text>
+        <text class="row-value">{{club.location}}</text>
+      </view>
+    </view>
+
+    <!-- 简介 -->
+    <view class="card">
+      <view class="section-title">社团简介</view>
+      <view class="desc">{{club.description}}</view>
+    </view>
+
+    <!-- 管理员 -->
+    <view class="card">
+      <view class="section-title">管理员（{{club.admins.length}}）</view>
+
+      <view wx:if="{{club.admins.length === 0}}" class="desc">暂无管理员信息</view>
+
+      <view class="admin" wx:for="{{club.admins}}" wx:key="id">
+        <view class="admin-top">
+          <text class="admin-name">{{item.realName}}</text>
+        </view>
+        <view
+          wx:if="{{item.phone}}"
+          class="admin-line"
+          data-phone="{{item.phone}}"
+          bindtap="onCall"
+        >
+          <text class="admin-key">电话</text>
+          <text class="admin-val link">{{item.phone}}</text>
+        </view>
+        <view
+          wx:if="{{item.email}}"
+          class="admin-line"
+          data-text="{{item.email}}"
+          bindtap="onCopy"
+        >
+          <text class="admin-key">邮箱</text>
+          <text class="admin-val link">{{item.email}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作 -->
+    <view class="actions">
+      <view class="btn btn-primary" bindtap="goEdit">编辑</view>
+      <view class="btn btn-danger" bindtap="onDelete">删除</view>
+    </view>
+
+  </block>
+
+</view>
