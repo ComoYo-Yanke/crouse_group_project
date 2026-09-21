@@ -3,7 +3,7 @@
 如此强劲,震撼人心!
 - 重要！！！ 开发前请确保掌握git语法和开源许可协议， 请查看<a href="gitcommit.md">git开发手册</a>和<a href="./LICENSE">许可协议</a>
 项目名称： 
-
+仓库地址：https://gitee.com/yanke_4_0/course_group_project
 技术栈： Python Django（后端） + 微信小程序（前端）
 
 小组成员：
