@@ -112,16 +112,58 @@ cd backend
 mvn spring-boot:run
 ```
 
-默认用 **H2 内存数据库**，无需装 MySQL，启动即跑。H2 控制台：http://localhost:8080/h2-console
-（JDBC URL `jdbc:h2:mem:nutrition`，用户名 `sa`，密码空）
+> 推荐直接用 IDEA 打开 `backend` 目录运行 `NutritionistApplication`（IDEA 自带 Maven，无需单独安装）。数据库配置见下方「数据库」一节。
 
-要换成 MySQL：
+### 数据库
 
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=mysql
-```
+后端支持两种数据库，**默认 H2 内存库，开箱即跑，无需安装任何东西**。
 
-连接配置在 `backend/src/main/resources/application-mysql.yml`，默认 `localhost:3306/nutritionist`、`root/123456`，按需修改。
+#### 方式一：H2 内存数据库（默认，零配置）
+
+- 不用安装、不用建库，启动时 JPA 自动按 `doc/sql.md` 的表结构建表
+- 启动时自动初始化演示账号：`demo / 123456`、`xiaoming / 123456`（含公开记录、点赞、评论示例数据）
+- 数据存在内存中，**服务重启后清空**（适合开发演示；要持久数据请用 MySQL）
+- H2 可视化控制台：http://localhost:8080/h2-console
+
+  | 项 | 值 |
+  | ---- | ---- |
+  | JDBC URL | `jdbc:h2:mem:nutrition` |
+  | User Name | `sa` |
+  | Password | （空） |
+
+#### 方式二：MySQL 8.0（持久化）
+
+1. 安装并启动 MySQL 后，先建库（utf8mb4）：
+
+   ```sql
+   CREATE DATABASE IF NOT EXISTS nutritionist
+     DEFAULT CHARACTER SET utf8mb4
+     DEFAULT COLLATE utf8mb4_general_ci;
+   ```
+
+   > 也可以不手动建库：连接串里已带 `createDatabaseIfNotExist=true`，用有建库权限的账号连接即可自动创建。
+
+2. 修改连接配置 `backend/src/main/resources/application-mysql.yml`：
+
+   ```yaml
+   spring:
+     datasource:
+       url: jdbc:mysql://localhost:3306/nutritionist?...
+       username: root      # 改成你的账号
+       password: 123456    # 改成你的密码
+   ```
+
+3. 以 `mysql` profile 启动：
+
+   ```bash
+   cd backend
+   mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+   # 或 IDEA：Run Configuration → Active profiles 填 mysql
+   ```
+
+4. 首次启动 JPA 会自动建表（表结构与 `doc/sql.md` 一致），无需手动执行建表 SQL；如需手动初始化，建表语句见 <a href="./doc/sql.md">数据库设计文档</a> 第三节
+
+> 两种模式切换只由 profile 决定：不加参数 = H2，`-Dspring-boot.run.profiles=mysql` = MySQL。
 
 **③ 前端**（端口 5173）
 
@@ -166,13 +208,20 @@ npm run dev
 
 ## 五、当前状态
 
-项目骨架和全部页面/接口已写完，但**后端目前无法完整跑通**，已知阻塞：
+主流程已跑通（2026-10-08 实测：注册/登录 → 记一笔 → 每日报告 → 广场点赞/评论分楼 全链路通过）。
 
-1. **JWT 拦截器没有注册**。`AuthInterceptor` 写好了，但没有任何 `WebMvcConfigurer` 把它注册进去，导致拦截器从不执行、`UserContext` 永远为空。除注册/登录外，所有走 `UserContext.require()` 的接口都会返回 `401 未登录`。修复需要在 `com.nutritionist` 下补一个配置类调用 `addInterceptors`。
-2. **演示账号没有初始化**。`backend/README.md` 写的 `demo / 123456`、`xiaoming / 123456` 实际不存在——代码里没有任何 `CommandLineRunner` 种子数据，H2 库每次启动都是空的，只能自己走注册流程。
-3. **`/ai/rag` 不是真正的 RAG**。目前是 10 条硬编码膳食指南文本 + 关键词打分，没有向量化、没有向量库；图片识别在未配置 key 时返回占位结果。
+**已验证功能**：
 
-> 这意味着「启动 → 登录 → 记一笔 → 看报告」这条主流程现在**走不通**，第 1 条修掉之后才能完整演示。
+- JWT 鉴权：`AuthInterceptor` 已在 `WebConfig` 注册，白名单仅 `/api/user/register|login`，其余接口需 `Authorization: Bearer <token>`
+- 演示账号：H2 模式启动时 `DemoDataInitializer` 自动初始化 `demo/123456`、`xiaoming/123456` 及示例记录/点赞/评论
+- 营养计算：BMR、目标摄入、缺口分析公式与 `doc/need.md` 附录一致（实测 demo 用户 BMR=1689、减脂目标=1527 kcal）
+- 社交：点赞 toggle 防重、评论两级分楼（一级倒序 + 回复正序）、删一级评论级联删回复
+
+**已知限制**：
+
+1. `/ai/rag` 目前是本地简化版（10 条膳食指南条目 + 关键词检索），未接向量库；图片识别在未配置 LLM key 时返回低置信度占位结果，需手动修正
+2. H2 内存库重启数据清空；持久化请切 MySQL profile（见上文数据库一节）
+3. 广场「按点赞数排序」为分页后内存排序，数据量大时需改为 SQL 聚合排序
 
 ---
 
