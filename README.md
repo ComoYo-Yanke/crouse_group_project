@@ -1,6 +1,6 @@
 # 私人营养师系统
 
-## **danger** 此分支不可直接提交！！！
+## 分支 feature/frontend-vue3
 
 - **重要！！！** 开发前请确保掌握 git 语法和开源许可协议，请查看 <a href="./doc/gitcommit.md">git开发手册</a>、<a href="./doc/branchRule.md">分支规范</a> 和 <a href="./LICENSE">许可协议</a>
 
