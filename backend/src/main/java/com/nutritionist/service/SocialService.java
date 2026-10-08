@@ -61,14 +61,8 @@ public class SocialService {
         List<Long> recordIds = records.stream().map(FoodRecord::getId).collect(Collectors.toList());
         Map<Long, Long> likeCounts = likeMap(records);
         Map<Long, Long> commentCounts = new HashMap<>();
-        Set<Long> likedByMe = new HashSet<>();
         for (Long rid : recordIds) {
             commentCounts.put(rid, commentRepo.countByRecordId(rid));
-        }
-        if (currentUserId != null && !recordIds.isEmpty()) {
-            likedByMe = likeRepo.findByUserIdAndRecordIdIn(currentUserId, recordIds).stream()
-                    .map(LikeRecord::getRecordId)
-                    .collect(Collectors.toSet());
         }
 
         // 用户名映射
@@ -76,6 +70,16 @@ public class SocialService {
         Map<Long, String> userNames = new HashMap<>();
         if (!userIds.isEmpty()) {
             userRepo.findAllById(userIds).forEach(u -> userNames.put(u.getId(), u.getUsername()));
+        }
+
+        // 我是否已赞（final，供 lambda 使用）
+        final Set<Long> likedByMe;
+        if (currentUserId != null && !recordIds.isEmpty()) {
+            likedByMe = likeRepo.findByUserIdAndRecordIdIn(currentUserId, recordIds).stream()
+                    .map(LikeRecord::getRecordId)
+                    .collect(Collectors.toSet());
+        } else {
+            likedByMe = Collections.emptySet();
         }
 
         Dtos.SquareResp resp = new Dtos.SquareResp();
