@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>铃兰 · 贴身女仆</title>
+<style>
+/* ============ 配色：柔和奶油 + 樱粉 + 淡紫 ============ */
+:root{
+  --cream:#fff9f5;
+  --cream-2:#fdf1ea;
+  --pink:#ffd7e0;
+  --pink-deep:#f2a0b4;
+  --pink-soft:#ffeef3;
+  --lavender:#ece6ff;
+  --lav-deep:#b3a4e8;
+  --text:#5a4a4f;
+  --text-soft:#9b8a90;
+  --line:#f3e2e6;
+  --shadow:0 12px 40px rgba(214,170,182,.28);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+html,body{height:100%;}
+
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 12% 8%, #ffe9f0 0%, transparent 45%),
+    radial-gradient(circle at 88% 92%, #eae2ff 0%, transparent 45%),
+    linear-gradient(160deg, var(--cream) 0%, var(--cream-2) 100%);
+  background-attachment:fixed;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  overflow:hidden;
+}
+
+/* 背景小圆点，营造柔软感 */
+body::before{
+  content:"";
+  position:fixed;inset:0;
+  background-image:radial-gradient(rgba(242,160,180,.16) 1.4px, transparent 1.4px);
+  background-size:26px 26px;
+  pointer-events:none;
+}
+
+/* ============ 主卡片 ============ */
+.app{
+  position:relative;
+  width:100%;
+  max-width:760px;
+  height:min(880px, calc(100vh - 40px));
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:26px;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* ============ 顶部栏 ============ */
+.header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:16px 20px;
+  background:linear-gradient(120deg,#fff2f6 0%, #f6f0ff 100%);
+  border-bottom:1px solid var(--line);
+  flex-shrink:0;
+}
+
+.avatar{
+  width:46px;height:46px;
+  border-radius:50%;
+  background:linear-gradient(150deg,#ffe3ec,#e6dcff);
+  border:2px solid #fff;
+  box-shadow:0 4px 14px rgba(226,166,184,.42);
+  display:grid;place-items:center;
+  font-size:23px;
+  flex-shrink:0;
+  position:relative;
+}
+/* 在线小绿点 */
+.avatar::after{
+  content:"";
+  position:absolute;right:-1px;bottom:-1px;
+  width:12px;height:12px;border-radius:50%;
+  background:#8fd9a8;
+  border:2.5px solid #fff;
+}
+
+.title{flex:1;min-width:0;}
+.title h1{
+  font-size:16px;font-weight:600;letter-spacing:.4px;
+  display:flex;align-items:center;gap:7px;
+}
+.title h1 span.tag{
+  font-size:10px;font-weight:500;
+  color:#b98aa0;
+  background:#fff;
+  border:1px solid var(--line);
+  padding:2px 7px;border-radius:20px;
+}
+.title p{font-size:11.5px;color:var(--text-soft);margin-top:3px;}
+
+.icon-btn{
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--text-soft);
+  font-size:12px;
+  font-family:inherit;
+  padding:8px 13px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:.22s;
+  flex-shrink:0;
+}
+.icon-btn:hover{
+  color:var(--pink-deep);
+  border-color:var(--pink);
+  background:var(--pink-soft);
+  transform:translateY(-1px);
+}
+
+/* ============ 消息滚动窗口 ============ */
+.chat{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:22px 20px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  scroll-behavior:smooth;
+}
+.chat::-webkit-scrollbar{width:7px;}
+.chat::-webkit-scrollbar-thumb{
+  background:#f0d8e0;border-radius:10px;
+}
+.chat::-webkit-scrollbar-thumb:hover{background:var(--pink-deep);}
+.chat::-webkit-scrollbar-track{background:transparent;}
+
+/* 一行消息 */
+.row{display:flex;gap:10px;align-items:flex-start;animation:pop .32s ease both;}
+.row.me{flex-direction:row-reverse;}
+@keyframes pop{
+  from{opacity:0;transform:translateY(9px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.row .mini{
+  width:32px;height:32px;border-radius:50%;
+  display:grid;place-items:center;font-size:15px;
+  flex-shrink:0;margin-top:2px;
+  background:linear-gradient(150deg,#ffe3ec,#e6dcff);
+  border:1.5px solid #fff;
+  box-shadow:0 2px 8px rgba(226,166,184,.3);
+}
+.row.me .mini{background:linear-gradient(150deg,#e9f3ff,#dff0ff);}
+
+.bubble{
+  max-width:min(78%, 520px);
+  padding:12px 16px;
+  border-radius:18px;
+  font-size:14.5px;
+  line-height:1.72;
+  white-space:pre-wrap;
+  word-break:break-word;
+  position:relative;
+}
+
+/* 女仆气泡 */
+.row.her .bubble{
+  background:#fff;
+  border:1px solid var(--line);
+  border-top-left-radius:6px;
+  box-shadow:0 3px 14px rgba(214,170,182,.16);
+  color:var(--text);
+}
+/* 主人气泡 */
+.row.me .bubble{
+  background:linear-gradient(135deg,#ffd9e4,#ffc9d9);
+  color:#7d4c5c;
+  border-top-right-radius:6px;
+  box-shadow:0 4px 16px rgba(242,160,180,.32);
+}
+
+.bubble code{
+  background:#fdf1f5;color:#c4708d;
+  padding:1.5px 6px;border-radius:6px;
+  font-size:13px;font-family:Consolas,Monaco,monospace;
+}
+.bubble strong{color:#c4708d;font-weight:600;}
+.row.me .bubble code{background:rgba(255,255,255,.6);color:#a8556f;}
+.row.me .bubble strong{color:#a8556f;}
+
+/* 打字光标 */
+.bubble.typing::after{
+  content:"";
+  display:inline-block;
+  width:2px;height:15px;
+  margin-left:2px;
+  vertical-align:-2px;
+  background:var(--pink-deep);
+  animation:blink .8s step-end infinite;
+}
+@keyframes blink{50%{opacity:0;}}
+
+/* 三点等待动画 */
+.dots{display:inline-flex;gap:4px;align-items:center;height:14px;}
+.dots i{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--pink-deep);opacity:.45;
+  animation:bounce 1.3s infinite;
+}
+.dots i:nth-child(2){animation-delay:.18s;}
+.dots i:nth-child(3){animation-delay:.36s;}
+@keyframes bounce{
+  0%,60%,100%{transform:translateY(0);opacity:.4;}
+  30%{transform:translateY(-5px);opacity:1;}
+}
+
+/* 状态提示条（正在查资料等），属于"在忙"，不泄露工具内容 */
+.status{
+  align-self:flex-start;
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:#b98aa0;
+  background:#fff6fa;
+  border:1px solid var(--line);
+  padding:6px 13px;border-radius:20px;
+  margin-left:42px;
+  animation:pop .28s ease both;
+}
+
+/* 出错提示 */
+.error-box{
+  align-self:center;
+  max-width:90%;
+  font-size:12.5px;
+  color:#b4636f;
+  background:#fff1f2;
+  border:1px solid #ffd9dd;
+  padding:10px 16px;border-radius:14px;
+  text-align:center;line-height:1.65;
+}
+
+/* ============ 输入区 ============ */
+.input-area{
+  flex-shrink:0;
+  padding:14px 18px 18px;
+  background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,250,252,.95) 40%);
+  border-top:1px solid var(--line);
+}
+
+.input-wrap{
+  display:flex;align-items:flex-end;gap:10px;
+  background:#fff;
+  border:1.5px solid var(--line);
+  border-radius:20px;
+  padding:7px 7px 7px 16px;
+  transition:.25s;
+  box-shadow:0 3px 14px rgba(214,170,182,.13);
+}
+.input-wrap:focus-within{
+  border-color:var(--pink);
+  box-shadow:0 4px 20px rgba(242,160,180,.28);
+}
+
+#input{
+  flex:1;
+  border:none;outline:none;
+  resize:none;
+  font-family:inherit;
+  font-size:14.5px;
+  line-height:1.6;
+  color:var(--text);
+  background:transparent;
+  max-height:130px;
+  padding:8px 0;
+}
+#input::placeholder{color:#cbb8bf;}
+
+#send{
+  flex-shrink:0;
+  width:42px;height:42px;
+  border:none;border-radius:14px;
+  background:linear-gradient(135deg,#ffc2d4,#f2a0b4);
+  color:#fff;
+  font-size:17px;
+  cursor:pointer;
+  display:grid;place-items:center;
+  transition:.22s;
+  box-shadow:0 4px 14px rgba(242,160,180,.4);
+}
+#send:hover:not(:disabled){transform:scale(1.06) rotate(-6deg);}
+#send:active:not(:disabled){transform:scale(.94);}
+#send:disabled{
+  background:#f0e6ea;color:#fff;
+  box-shadow:none;cursor:not-allowed;
+}
+
+.hint{
+  text-align:center;font-size:11px;
+  color:#c4b2b9;margin-top:9px;
+}
+
+@media (max-width:560px){
+  body{padding:0;}
+  .app{height:100vh;max-width:none;border-radius:0;border:none;}
+  .bubble{max-width:84%;font-size:14px;}
+  .header{padding:13px 15px;}
+  .chat{padding:16px 13px 6px;}
+  .input-area{padding:11px 13px 14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- 顶部栏 -->
+  <div class="header">
+    <div class="avatar">🎀</div>
+    <div class="title">
+      <h1>铃兰 <span class="tag">贴身女仆</span></h1>
+      <p id="subtitle">随时听候主人的吩咐</p>
+    </div>
+    <button class="icon-btn" id="resetBtn" title="清空当前对话记忆">新对话</button>
+  </div>
+
+  <!-- 滚动消息窗口 -->
+  <div class="chat" id="chat"></div>
+
+  <!-- 输入区 -->
+  <div class="input-area">
+    <div class="input-wrap">
+      <textarea id="input" rows="1" placeholder="跟铃兰说点什么吧，主人…"></textarea>
+      <button id="send" title="发送">➤</button>
+    </div>
+    <div class="hint">Enter 发送 · Shift + Enter 换行</div>
+  </div>
+</div>
+
+<script>
+/* ==================== 基础配置 ==================== */
+const chatEl     = document.getElementById('chat');
+const inputEl    = document.getElementById('input');
+const sendBtn    = document.getElementById('send');
+const resetBtn   = document.getElementById('resetBtn');
+const subtitleEl = document.getElementById('subtitle');
+
+/* 会话 id：存在 localStorage，刷新页面也能续上之前的记忆 */
+let sessionId = localStorage.getItem('maid_session_id');
+if (!sessionId) {
+  sessionId = (crypto.randomUUID ? crypto.randomUUID() : 'sid-' + Date.now() + Math.random());
+  localStorage.setItem('maid_session_id', sessionId);
+}
+
+let busy = false;          // 是否正在等后端
+let currentBubble = null;  // 当前正在打字的气泡
+let typeQueue = '';        // 待显示的字符队列（打字机效果）
+let typing = false;        // 打字机是否在跑
+let firstDelta = false;    // 本轮是否已经收到第一个字
+let statusEl = null;       // "正在查询…"状态条
+
+/* ==================== 工具函数 ==================== */
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* 极简 Markdown：先转义再替换，安全 */
+function richText(s) {
+  let h = escapeHtml(s);
+  h = h.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  h = h.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  return h;
+}
+
+function scrollBottom(force) {
+  const near = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 160;
+  if (force || near) chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+/* 新增一行消息，返回气泡元素 */
+function addRow(who, text) {
+  const row = document.createElement('div');
+  row.className = 'row ' + (who === 'me' ? 'me' : 'her');
+
+  const mini = document.createElement('div');
+  mini.className = 'mini';
+  mini.textContent = who === 'me' ? '👤' : '🎀';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  if (text) bubble.textContent = text;
+
+  row.appendChild(mini);
+  row.appendChild(bubble);
+  chatEl.appendChild(row);
+  scrollBottom(true);
+  return bubble;
+}
+
+function showStatus(label) {
+  if (!statusEl) {
+    statusEl = document.createElement('div');
+    statusEl.className = 'status';
+    chatEl.appendChild(statusEl);
+  }
+  statusEl.innerHTML = '<span class="dots"><i></i><i></i><i></i></span><span></span>';
+  statusEl.lastChild.textContent = label;
+  scrollBottom(true);
+}
+
+function clearStatus() {
+  if (statusEl) { statusEl.remove(); statusEl = null; }
+}
+
+function showError(msg) {
+  const box = document.createElement('div');
+  box.className = 'error-box';
+  box.textContent = msg;
+  chatEl.appendChild(box);
+  scrollBottom(true);
+}
+
+/* ==================== 打字机效果 ==================== */
+/* 后端的 token 是一片片来的，这里按字逐个吐出来，观感更顺滑 */
+function enqueue(text) {
+  // 收到第一个字就把"等待中"的气泡/状态条换掉
+  if (!firstDelta) {
+    firstDelta = true;
+    clearStatus();
+    if (currentBubble) {
+      currentBubble.innerHTML = '';
+      currentBubble.classList.add('typing');
+    }
+  }
+  typeQueue += text;
+  if (!typing) pump();
+}
+
+function pump() {
+  if (!currentBubble) { typeQueue = ''; typing = false; return; }
+  if (!typeQueue) {
+    typing = false;
+    return;
+  }
+  typing = true;
+  // 积压越多，一次吐越多，保证打字机不会落后于网络
+  const step = Math.max(1, Math.ceil(typeQueue.length / 26));
+  currentBubble.textContent += typeQueue.slice(0, step);
+  typeQueue = typeQueue.slice(step);
+  scrollBottom(false);
+  setTimeout(pump, 18);
+}
+
+/* ==================== 发送消息 ==================== */
+async function send() {
+  const text = inputEl.value.trim();
+  if (!text || busy) return;
+
+  addRow('me', text);
+  inputEl.value = '';
+  autoGrow();
+  setBusy(true);
+
+  // 先放一个空气泡 + 等待动画，让主人知道铃兰在
+  currentBubble = addRow('her', '');
+  currentBubble.innerHTML = '<span class="dots"><i></i><i></i><i></i></span>';
+  typeQueue = '';
+  typing = false;
+  firstDelta = false;
+
+  let fullText = '';
+
+  try {
+    // 后端返回 text/event-stream，用 fetch 读流（POST 无法用 EventSource）
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, session_id: sessionId })
+    });
+
+    if (!resp.ok || !resp.body) {
+      throw new Error('HTTP ' + resp.status);
+    }
+
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      // SSE 以空行分帧
+      const frames = buffer.split('\n\n');
+      buffer = frames.pop();
+
+      for (const frame of frames) {
+        const line = frame.split('\n').find(l => l.startsWith('data:'));
+        if (!line) continue;
+
+        let ev;
+        try { ev = JSON.parse(line.slice(5).trim()); }
+        catch { continue; }
+
+        if (ev.type === 'tool') {
+          // 后台动作：只显示"在忙"，绝不显示工具原始返回
+          showStatus('铃兰正在翻找资料…');
+          subtitleEl.textContent = '正在忙碌中…';
+
+        } else if (ev.type === 'delta') {
+          enqueue(ev.text);
+          fullText += ev.text;
+
+        } else if (ev.type === 'done') {
+          fullText = ev.content || fullText;
+
+        } else if (ev.type === 'error') {
+          clearStatus();
+          if (currentBubble && !currentBubble.textContent.trim()) {
+            currentBubble.closest('.row').remove();
+          }
+          showError('铃兰遇到了一点小问题…\n' + (ev.message || '') +
+                    (ev.hint ? '\n' + ev.hint : ''));
+          currentBubble = null;
+        }
+      }
+    }
+  } catch (err) {
+    clearStatus();
+    if (currentBubble && !currentBubble.textContent.trim()) {
+      currentBubble.closest('.row').remove();
+    }
+    showError('连不上铃兰了呢…请确认后端已启动（python app.py）。\n' + err.message);
+    currentBubble = null;
+  } finally {
+    // 等打字机把队列吐完，再收尾
+    await waitTypingDone();
+    clearStatus();
+    if (currentBubble) {
+      currentBubble.classList.remove('typing');
+      if (fullText.trim()) {
+        currentBubble.innerHTML = richText(fullText);  // 收尾时渲染一下加粗/代码
+      } else {
+        // 模型只输出了思考内容或被滤空时的兜底，别留一个空气泡
+        currentBubble.textContent = '嗯…铃兰刚刚走神了一下，主人能再说一次吗？';
+      }
+    }
+    currentBubble = null;
+    subtitleEl.textContent = '随时听候主人的吩咐';
+    setBusy(false);
+    inputEl.focus();
+  }
+}
+
+/* 等打字机队列排空 */
+function waitTypingDone() {
+  return new Promise(resolve => {
+    const check = () => {
+      if (!typing && !typeQueue) resolve();
+      else setTimeout(check, 40);
+    };
+    check();
+  });
+}
+
+function setBusy(v) {
+  busy = v;
+  sendBtn.disabled = v;
+}
+
+/* 输入框高度自适应 */
+function autoGrow() {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 130) + 'px';
+}
+
+/* ==================== 事件绑定 ==================== */
+sendBtn.addEventListener('click', send);
+
+inputEl.addEventListener('input', autoGrow);
+
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+    e.preventDefault();
+    send();
+  }
+});
+
+resetBtn.addEventListener('click', async () => {
+  if (busy) return;
+  if (!confirm('要清空和铃兰的这段对话记忆吗？')) return;
+  try {
+    await fetch('/api/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId })
+    });
+  } catch (e) { /* 后端没起来也无所谓，本地照样清屏 */ }
+  chatEl.innerHTML = '';
+  greeting();
+});
+
+/* ==================== 开场白 ==================== */
+function greeting() {
+  addRow('her', '主人，欢迎回来。铃兰一直都在呢。\n今天想聊些什么？');
+}
+
+greeting();
+inputEl.focus();
+
+/* 顺手做个自检，Ollama 没起来的话提前告诉主人 */
+(async () => {
+  try {
+    const r = await fetch('/api/health');
+    const h = await r.json();
+    if (!h.ready) {
+      showError('温馨提示：' + (h.hint || ('模型 ' + h.model + ' 未就绪')));
+    }
+  } catch { /* 忽略 */ }
+})();
+</script>
+</body>
+</html>

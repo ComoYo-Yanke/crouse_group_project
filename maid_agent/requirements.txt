@@ -1,0 +1,17 @@
+# 依赖清单：pip install -r requirements.txt
+#
+# 你的环境是 Python 3.8.5，下面的版本都是在这个环境里实测装好并跑通的。
+
+openai>=1.30.0              # 用 OpenAI 兼容协议连本地 Ollama（实测 2.2.0）
+fastapi>=0.110.0            # 后端 Web 框架（实测 0.124.4）
+uvicorn>=0.29.0             # ASGI 服务器，启动 FastAPI（实测 0.33.0）
+pydantic>=2.0.0             # FastAPI 的请求模型（实测 2.10.6，随 fastapi 自动装）
+
+# 网络搜索工具，无需 API Key。
+# Python 3.8 请用旧包名 duckduckgo-search；新包名 ddgs 要求 Python 3.9+，
+# 在 3.8 上 pip 会直接报 "No matching distribution found"。
+duckduckgo-search>=6.0.0    # 实测 7.2.1 可用
+# ddgs>=9.0.0               # 仅 Python 3.9+ 可用，升级 Python 后可以换成这个
+
+# 说明：my_first_agent.py 里对两个包名都做了兼容，
+# 优先 import ddgs，失败则回退到 duckduckgo_search，装哪个都能跑。
