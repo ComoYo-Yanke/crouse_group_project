@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getRecords, deleteRecord, updateVisibility } from '@/api/record'
+import { getRecords, deleteRecord, updateVisibility, updateRecord } from '@/api/record'
 
 const loading = ref(false)
 const records = ref([])
@@ -37,6 +37,57 @@ async function handleToggleVisibility(record) {
     ElMessage.success(next === 'public' ? '已公开，广场可见' : '已设为私密')
   } catch (e) {
     /* 拦截器已提示 */
+  }
+}
+
+// ---- 手动修正（need.md 3.3.3）：保存后仍可修改食物名/份量/营养 ----
+const editVisible = ref(false)
+const editSaving = ref(false)
+const editForm = reactive({
+  recordId: null,
+  foodName: '',
+  portion: '',
+  calories: 0,
+  protein: 0,
+  fat: 0,
+  carbs: 0
+})
+
+function handleEdit(record) {
+  editForm.recordId = record.recordId
+  editForm.foodName = record.foodName || ''
+  editForm.portion = record.portion || ''
+  editForm.calories = record.nutrition?.calories ?? 0
+  editForm.protein = record.nutrition?.protein ?? 0
+  editForm.fat = record.nutrition?.fat ?? 0
+  editForm.carbs = record.nutrition?.carbs ?? 0
+  editVisible.value = true
+}
+
+async function submitEdit() {
+  if (!editForm.foodName.trim()) {
+    ElMessage.warning('食物名称不能为空')
+    return
+  }
+  editSaving.value = true
+  try {
+    await updateRecord(editForm.recordId, {
+      foodName: editForm.foodName.trim(),
+      portion: editForm.portion,
+      nutrition: {
+        calories: Number(editForm.calories) || 0,
+        protein: Number(editForm.protein) || 0,
+        fat: Number(editForm.fat) || 0,
+        carbs: Number(editForm.carbs) || 0
+      }
+    })
+    ElMessage.success('修正成功')
+    editVisible.value = false
+    loadData()
+  } catch (e) {
+    /* 拦截器已提示 */
+  } finally {
+    editSaving.value = false
   }
 }
 
@@ -141,6 +192,7 @@ onMounted(loadData)
         </div>
 
         <div class="record-actions">
+          <el-button size="small" type="primary" plain @click="handleEdit(record)">修正</el-button>
           <el-button
             size="small"
             :type="record.visibility === 'public' ? 'info' : 'success'"
@@ -153,6 +205,38 @@ onMounted(loadData)
         </div>
       </div>
     </el-card>
+
+    <!-- 手动修正弹窗 -->
+    <el-dialog v-model="editVisible" title="手动修正记录" width="460px">
+      <el-form label-width="80px">
+        <el-form-item label="食物名">
+          <el-input v-model="editForm.foodName" placeholder="如：鸡胸肉沙拉" />
+        </el-form-item>
+        <el-form-item label="份量">
+          <el-input v-model="editForm.portion" placeholder="如：1 份 / 200g" />
+        </el-form-item>
+        <el-form-item label="热量">
+          <el-input-number v-model="editForm.calories" :min="0" :step="10" controls-position="right" />
+          <span class="unit">kcal</span>
+        </el-form-item>
+        <el-form-item label="蛋白质">
+          <el-input-number v-model="editForm.protein" :min="0" :step="1" controls-position="right" />
+          <span class="unit">g</span>
+        </el-form-item>
+        <el-form-item label="脂肪">
+          <el-input-number v-model="editForm.fat" :min="0" :step="1" controls-position="right" />
+          <span class="unit">g</span>
+        </el-form-item>
+        <el-form-item label="碳水">
+          <el-input-number v-model="editForm.carbs" :min="0" :step="1" controls-position="right" />
+          <span class="unit">g</span>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editVisible = false">取消</el-button>
+        <el-button type="primary" :loading="editSaving" @click="submitEdit">保存修正</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -269,5 +353,11 @@ onMounted(loadData)
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.unit {
+  margin-left: 8px;
+  color: #909399;
+  font-size: 13px;
 }
 </style>

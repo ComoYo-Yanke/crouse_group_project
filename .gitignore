@@ -29,6 +29,10 @@ application.yaml.bak.5
 application.yaml.bak.6
 application.yaml.bak.7
 
-test/
-clubs/
-config/
+# 以下规则仅锚定项目根目录，避免误伤源码树内的同名目录
+# （例如 backend/src/main/java/com/nutritionist/config/ 曾被 config/ 规则
+#   排除出版本库，导致 WebConfig / DemoDataInitializer 未入库）
+/test/
+/clubs/
+/config/
+/logs/

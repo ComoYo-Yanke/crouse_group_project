@@ -68,8 +68,12 @@ public class SocialService {
         // 用户名映射
         Set<Long> userIds = records.stream().map(FoodRecord::getUserId).collect(Collectors.toSet());
         Map<Long, String> userNames = new HashMap<>();
+        Map<Long, String> userAvatars = new HashMap<>();
         if (!userIds.isEmpty()) {
-            userRepo.findAllById(userIds).forEach(u -> userNames.put(u.getId(), u.getUsername()));
+            userRepo.findAllById(userIds).forEach(u -> {
+                userNames.put(u.getId(), u.getUsername());
+                userAvatars.put(u.getId(), u.getAvatar());
+            });
         }
 
         // 我是否已赞（final，供 lambda 使用）
@@ -91,6 +95,7 @@ public class SocialService {
             m.put("recordId", r.getId());
             m.put("userId", r.getUserId());
             m.put("username", userNames.getOrDefault(r.getUserId(), "未知用户"));
+            m.put("avatar", userAvatars.getOrDefault(r.getUserId(), null));
             m.put("foodName", r.getFoodName());
             m.put("mealType", r.getMealType());
             m.put("imageUrl", r.getImageUrl());
@@ -141,16 +146,22 @@ public class SocialService {
             }
         }
         Map<Long, String> userNames = new HashMap<>();
+        Map<Long, String> userAvatars = new HashMap<>();
         if (!userIds.isEmpty()) {
-            userRepo.findAllById(userIds).forEach(u -> userNames.put(u.getId(), u.getUsername()));
+            userRepo.findAllById(userIds).forEach(u -> {
+                userNames.put(u.getId(), u.getUsername());
+                userAvatars.put(u.getId(), u.getAvatar());
+            });
         }
 
         List<Map<String, Object>> comments = new ArrayList<>();
         for (Comment c : top) {
-            Map<String, Object> m = toCommentMap(c, userNames);
+            // 一级评论作者名，供二级回复展示「回复 @某人」（api.md 五.3）
+            String topAuthor = userNames.getOrDefault(c.getUserId(), "未知用户");
+            Map<String, Object> m = toCommentMap(c, userNames, userAvatars, null);
             List<Map<String, Object>> replies = new ArrayList<>();
             for (Comment r : commentRepo.findByParentIdOrderByCreatedAtAsc(c.getId())) {
-                Map<String, Object> rm = toCommentMap(r, userNames);
+                Map<String, Object> rm = toCommentMap(r, userNames, userAvatars, topAuthor);
                 rm.put("parentId", c.getId());
                 replies.add(rm);
             }
@@ -206,11 +217,16 @@ public class SocialService {
         commentRepo.delete(c);
     }
 
-    private Map<String, Object> toCommentMap(Comment c, Map<Long, String> userNames) {
+    private Map<String, Object> toCommentMap(Comment c, Map<Long, String> userNames,
+                                            Map<Long, String> userAvatars, String replyToUsername) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("commentId", c.getId());
         m.put("userId", c.getUserId());
         m.put("username", userNames.getOrDefault(c.getUserId(), "未知用户"));
+        m.put("avatar", userAvatars.getOrDefault(c.getUserId(), null));
+        if (replyToUsername != null) {
+            m.put("replyToUsername", replyToUsername);
+        }
         m.put("content", c.getContent());
         m.put("createdAt", c.getCreatedAt().toString());
         return m;

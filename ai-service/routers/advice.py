@@ -48,6 +48,8 @@ class AdviceResp(BaseModel):
     advice: str
     basedOn: List[str]
     safe: bool
+    # 安全拦截原因：safe=False 时为具体原因，safe=True 时为空字符串
+    reason: str = ""
 
 
 @router.post("/ai/rag", response_model=RagResp)
@@ -88,6 +90,7 @@ def advice(req: AdviceReq):
         "advice": advice_text,
         "basedOn": [f"{c['content']}（{c['source']}）" for c in chunks],
         "safe": check["safe"],
+        "reason": check.get("reason", ""),
     }
 
 
