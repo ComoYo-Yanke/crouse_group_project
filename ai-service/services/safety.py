@@ -23,21 +23,46 @@ ALLERGY_HINTS = {
 }
 
 
-def check(advice: str, allergy: str = "", bmr: int = 0) -> dict:
-    """返回 {safe, reason}"""
+def check(advice: str, allergy: str = "", bmr: int = 0, recommended_total: float = None) -> dict:
+    """
+    返回 {safe, reason}
+
+    recommended_total：本引擎计算出的「全天建议总摄入」(kcal)。
+    传入时按结构化数值校验规则1/2（最可靠），避免仅凭文本正则误判。
+    """
+    import re
+
     if not advice:
         return {"safe": True, "reason": ""}
 
     problems = []
 
-    # 规则1/2：极端节食提示（文本中明确建议极低热量时）
-    import re
-    kcal_numbers = [int(n) for n in re.findall(r"(\d{3,4})\s*(?:kcal|千卡|大卡)", advice)]
-    if kcal_numbers:
-        if any(n < 800 for n in kcal_numbers):
-            problems.append("建议中包含低于 800 kcal/天的极端节食方案")
-        if bmr > 0 and any(n < bmr * 0.8 for n in kcal_numbers):
-            problems.append("建议热量明显低于基础代谢，存在健康风险")
+    # 规则1/2 优先用结构化数值判断
+    if recommended_total is not None and recommended_total > 0:
+        if recommended_total < 800:
+            problems.append(f"建议的全天总摄入 {int(recommended_total)} kcal 低于 800 kcal/天，属极端节食")
+        if bmr > 0 and recommended_total < bmr * 0.8:
+            problems.append(f"建议的全天总摄入 {int(recommended_total)} kcal 明显低于基础代谢 {bmr} kcal，存在健康风险")
+    else:
+        # 无结构化数值时，退回文本正则：
+        # 只校验「全天摄入总量」语境的数字，跳过剩余额度/缺口/单餐等语境，
+        # 否则「今日还可摄入 727 kcal」会被误判成「全天只吃 727 kcal」。
+        skip_keywords = [
+            "还可摄入", "还能摄入", "尚可摄入", "剩余", "还差", "缺口",
+            "已超出", "超出", "本餐", "下一餐", "这一餐", "加餐",
+            "早餐", "午餐", "晚餐", "单餐", "本顿",
+        ]
+        kcal_numbers = []
+        for sentence in re.split(r"[。；;\n]", advice):
+            if any(kw in sentence for kw in skip_keywords):
+                continue
+            kcal_numbers += [int(n) for n in re.findall(r"(\d{3,4})\s*(?:kcal|千卡|大卡)", sentence)]
+
+        if kcal_numbers:
+            if any(n < 800 for n in kcal_numbers):
+                problems.append("建议中包含低于 800 kcal/天的极端节食方案")
+            if bmr > 0 and any(n < bmr * 0.8 for n in kcal_numbers):
+                problems.append("建议热量明显低于基础代谢，存在健康风险")
 
     # 规则3：违禁药物/极端手段
     for word in BANNED_WORDS:
@@ -45,10 +70,17 @@ def check(advice: str, allergy: str = "", bmr: int = 0) -> dict:
             problems.append(f"建议中包含危险内容：「{word}」")
 
     # 规则4：过敏原冲突
+    # 仅检查「推荐/包含食材」的语境；「已排除过敏原：花生」这类说明性、否定性表述不算冲突，
+    # 否则提及过敏原本身就会被拦截。
     if allergy:
+        negation_keywords = ["已排除", "已避开", "已过滤", "避免", "避开", "不含", "忌口", "过敏史", "过敏原"]
+        check_text = "\n".join(
+            s for s in re.split(r"[。；;\n]", advice)
+            if not any(kw in s for kw in negation_keywords)
+        )
         for allergen in [a.strip() for a in re.split(r"[、,，\s]+", allergy) if a.strip()]:
             for hint in ALLERGY_HINTS.get(allergen, [allergen]):
-                if hint in advice:
+                if hint in check_text:
                     problems.append(f"建议包含过敏原「{allergen}」相关食材，与用户过敏史冲突")
                     break
 
