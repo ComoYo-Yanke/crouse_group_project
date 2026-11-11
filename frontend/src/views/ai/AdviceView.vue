@@ -1,9 +1,12 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { generateAdvice } from '@/api/ai'
 import { getDailyReport } from '@/api/report'
 import { useUserStore } from '@/stores/user'
+import MarkdownRender from '@/components/MarkdownRender.vue'
+import AiProgress from '@/components/AiProgress.vue'
 
 const userStore = useUserStore()
 const loading = ref(false)
@@ -18,9 +21,13 @@ onMounted(async () => {
   }
 })
 
+// 用于中途强制停止请求
+let controller = null
+
 async function handleGenerate() {
   loading.value = true
   result.value = null
+  controller = new AbortController()
   try {
     // 组装 AI 建议所需数据（按 api.md 六.3）
     const profile = userStore.profile || {}
@@ -45,13 +52,26 @@ async function handleGenerate() {
       },
       todayIntake,
       gap
-    })
+    }, { signal: controller.signal })
     result.value = data
   } catch (e) {
+    if (axios.isCancel(e)) {
+      ElMessage.info('已停止生成')
+      return
+    }
     /* 拦截器已提示 */
   } finally {
     loading.value = false
+    controller = null
   }
+}
+
+function handleCancel() {
+  if (controller) {
+    controller.abort()
+    controller = null
+  }
+  loading.value = false
 }
 </script>
 
@@ -65,6 +85,9 @@ async function handleGenerate() {
         <el-button type="primary" size="large" :loading="loading" @click="handleGenerate">
           {{ loading ? 'AI 思考中…' : '下一餐吃什么？获取建议' }}
         </el-button>
+
+        <!-- 进度反馈 + 强制停止 -->
+        <AiProgress :active="loading" :estimated-sec="90" @cancel="handleCancel" />
       </div>
     </el-card>
 
@@ -90,7 +113,7 @@ async function handleGenerate() {
 
       <div class="advice-content">
         <h4>📝 AI 建议</h4>
-        <p class="advice-text">{{ result.advice }}</p>
+        <MarkdownRender :content="result.advice" class="advice-text" />
       </div>
 
       <div v-if="result.basedOn?.length" class="advice-basis">
@@ -143,13 +166,13 @@ async function handleGenerate() {
   color: #303133;
 }
 
+/* 该 class 作用于 MarkdownRender 组件的根元素 */
 .advice-text {
   background: #f0f9eb;
   border-radius: 8px;
-  padding: 16px;
-  line-height: 1.8;
+  padding: 16px 18px;
   color: #303133;
-  white-space: pre-wrap;
+  max-height: none;
 }
 
 .advice-basis {

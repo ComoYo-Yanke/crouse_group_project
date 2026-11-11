@@ -1,8 +1,10 @@
 <script setup>
 import { reactive, ref } from 'vue'
+import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { generateRecipe } from '@/api/ai'
 import { useUserStore } from '@/stores/user'
+import AiProgress from '@/components/AiProgress.vue'
 
 const userStore = useUserStore()
 const loading = ref(false)
@@ -15,20 +17,37 @@ const form = reactive({
   avoid: ''
 })
 
+// 用于中途强制停止请求
+let controller = null
+
 async function handleGenerate() {
   loading.value = true
   result.value = null
+  controller = new AbortController()
   try {
     // 默认带入用户画像的忌口
     const avoid = form.avoid || userStore.profile?.avoid || ''
-    const data = await generateRecipe({ ...form, avoid })
+    const data = await generateRecipe({ ...form, avoid }, { signal: controller.signal })
     result.value = data
     ElMessage.success('菜谱生成成功')
   } catch (e) {
+    if (axios.isCancel(e)) {
+      ElMessage.info('已停止生成')
+      return
+    }
     /* 拦截器已提示 */
   } finally {
     loading.value = false
+    controller = null
   }
+}
+
+function handleCancel() {
+  if (controller) {
+    controller.abort()
+    controller = null
+  }
+  loading.value = false
 }
 
 const mealIcons = { breakfast: '🌅', lunch: '☀️', dinner: '🌙' }
@@ -69,6 +88,9 @@ const mealNames = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐' }
         <el-button type="primary" size="large" :loading="loading" @click="handleGenerate">
           {{ loading ? 'AI 生成中…' : '🥗 生成一日三餐' }}
         </el-button>
+
+        <!-- 进度反馈 + 强制停止 -->
+        <AiProgress :active="loading" :estimated-sec="60" @cancel="handleCancel" />
       </el-form>
     </el-card>
 

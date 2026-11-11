@@ -28,20 +28,54 @@ const recognizeResult = reactive({
 
 const mealTypes = ['早餐', '午餐', '晚餐', '加餐']
 
+// 图片压缩：原图可能数 MB，转 base64 后体积再涨 33%，
+// 直接入库会导致记录列表加载极慢，这里统一缩到最长边 900px 的 JPEG。
+function compressImage(file, maxSide = 900, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = reject
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onerror = reject
+      img.onload = () => {
+        let { width, height } = img
+        // 小图不放大，避免无意义的体积增加
+        const scale = Math.min(1, maxSide / Math.max(width, height))
+        width = Math.round(width * scale)
+        height = Math.round(height * scale)
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+        const dataUrl = canvas.toDataURL('image/jpeg', quality)
+        resolve({ dataUrl, base64: dataUrl.split(',')[1] })
+      }
+      img.src = e.target.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 // 选择图片
-function handleFileChange(file) {
+async function handleFileChange(file) {
   const raw = file.raw || file
   if (!raw.type.startsWith('image/')) {
     ElMessage.error('请选择图片文件')
     return
   }
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    previewUrl.value = e.target.result
-    // 去掉 data:image/xxx;base64, 前缀
-    imageBase64.value = e.target.result.split(',')[1]
+  try {
+    const { dataUrl, base64 } = await compressImage(raw)
+    previewUrl.value = dataUrl
+    imageBase64.value = base64
+  } catch (e) {
+    // 压缩失败（如浏览器不支持 canvas）则回退原图
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      previewUrl.value = ev.target.result
+      imageBase64.value = ev.target.result.split(',')[1]
+    }
+    reader.readAsDataURL(raw)
   }
-  reader.readAsDataURL(raw)
 }
 
 // 调用 AI 识别

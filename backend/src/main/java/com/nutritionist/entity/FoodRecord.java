@@ -24,10 +24,17 @@ public class FoodRecord {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "food_name", nullable = false, length = 100)
+    /**
+     * 食物名：前端保存餐食时会把多个食物名用「、」拼接，
+     * 长度不定，用 CLOB 避免 Value too long（曾为 length=100）。
+     */
+    @Lob
+    @Column(name = "food_name", nullable = false, columnDefinition = "CLOB")
     private String foodName;
 
-    @Column(length = 50)
+    /** 份量：前端为多个「食物名+份量」的分号拼接，同上用 CLOB（曾为 length=50）。 */
+    @Lob
+    @Column(columnDefinition = "CLOB")
     private String portion;
 
     /** 早餐/午餐/晚餐/加餐 */
@@ -41,7 +48,13 @@ public class FoodRecord {
     private Double fiber;
     private Double sodium;
 
-    @Column(name = "image_url", length = 255)
+    /**
+     * 图片（前端以 base64 data URL 形式提交，长度可达数十 KB）
+     * 必须用 CLOB 存储：原定义为 length=255，远超长会抛
+     * Hibernate DataException: Value too long for column "IMAGE_URL"。
+     */
+    @Lob
+    @Column(name = "image_url", columnDefinition = "CLOB")
     private String imageUrl;
 
     /** 识别置信度 0-1 */

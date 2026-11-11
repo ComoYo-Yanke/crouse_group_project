@@ -1,4 +1,5 @@
-import request from './request'
+// 使用 AI 专用实例：超时 180 秒（本地大模型推理较慢，普通 30 秒会超时）
+import { aiRequest as request } from './request'
 
 /**
  * AI 微服务 API（Python FastAPI）
@@ -12,24 +13,30 @@ export function recognizeFood(data) {
   return request.post('/ai/recognize', data)
 }
 
-// RAG 检索
+// RAG 检索（纯本地检索，很快）
 export function ragSearch(query) {
   return request.post('/ai/rag', { query })
 }
 
 // 建议生成
-export function generateAdvice(data) {
+// config 可传 { signal } 用于中途取消（AbortController）
+export function generateAdvice(data, config = {}) {
   // data: { profile, todayIntake, gap }
-  return request.post('/ai/advice', data)
+  return request.post('/ai/advice', data, config)
 }
 
 // 菜谱生成
-export function generateRecipe(data) {
+export function generateRecipe(data, config = {}) {
   // data: { goal, budget, ingredients, avoid }
-  return request.post('/ai/recipe', data)
+  return request.post('/ai/recipe', data, config)
 }
 
-// 安全拦截检查
+// 安全拦截检查（纯规则校验，很快）
 export function safetyCheck(advice) {
   return request.post('/ai/safety-check', { advice })
+}
+
+// 查看 LLM 配置与连通性（排障用）
+export function llmStatus(ping = true) {
+  return request.get('/ai/llm-status', { params: { ping } })
 }

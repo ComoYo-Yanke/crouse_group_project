@@ -280,14 +280,26 @@ def advice(req: AdviceReq):
     try:
         guide_text = "\n".join(f"- {c['content']}（{c['source']}）" for c in chunks)
         advice_text = llm.chat(
-            f"用户画像：目标={p.goal}，BMR={p.bmr} kcal，目标摄入={p.targetCalories} kcal，"
+            f"用户画像：目标={p.goal}，基础代谢 BMR={p.bmr} kcal，全天目标摄入={p.targetCalories} kcal，"
             f"忌口={p.avoid or '无'}，过敏原={p.allergy or '无'}。\n"
             f"今日已摄入：热量 {intake.calories} kcal、蛋白质 {intake.protein}g、"
             f"脂肪 {intake.fat}g、碳水 {intake.carbs}g。\n"
-            f"膳食指南依据：\n{guide_text}\n\n"
-            "请给出 3 条具体、可执行的下一餐建议，不涉及过敏原和忌口，"
-            "不要建议低于基础代谢的热量摄入。用中文简洁输出。"
+            f"当前需要安排的餐次：{_meal_slot()}。\n"
+            f"可参考的膳食指南依据：\n{guide_text}\n\n"
+            "请给出该餐次的营养建议，用中文输出，并按以下板块组织（用【】作标题）：\n"
+            "【下一餐推荐】列出 3~5 种具体食物，每种注明份量、热量(kcal)与蛋白质(g)，并给出本餐合计\n"
+            "【营养分析】结合今日已摄入数据，评价热量进度与三大营养素供能比是否合理\n"
+            f"【{p.goal}期建议】给出 3~4 条具体、可执行的建议\n"
+            "【注意事项】2~3 条提醒\n"
+            "硬性要求：\n"
+            f"1. 严禁出现过敏原（{p.allergy or '无'}）与忌口（{p.avoid or '无'}）相关食材\n"
+            f"2. 全天总摄入不得低于基础代谢 {p.bmr} kcal，禁止极端节食方案\n"
+            "3. 量化到克数与千卡，可引用《中国居民膳食指南（2022）》\n"
+            "4. 直接给出结论，不要输出推理过程",
+            system="你是一名专业营养师，擅长依据《中国居民膳食指南（2022）》给出量化、可执行的饮食建议。",
         )
+        if not advice_text or not advice_text.strip():
+            raise RuntimeError("LLM 返回空内容")
     except Exception:
         advice_text, meal_kcal = _local_advice(p, intake, req.gap)
 
@@ -297,7 +309,9 @@ def advice(req: AdviceReq):
     if meal_kcal is not None:
         recommended_total = max(float(p.targetCalories or 0), float(intake.calories) + meal_kcal)
     else:
-        recommended_total = None
+        # LLM 模式：无法从文本可靠反推全天总量，直接用用户全天目标。
+        # 若传 None，safety 会退回文本正则，把「本餐 400 kcal」误判成全天极端节食。
+        recommended_total = float(p.targetCalories or 0) or None
     check = safety.check(advice_text, allergy=p.allergy or "", bmr=p.bmr,
                          recommended_total=recommended_total)
 

@@ -61,29 +61,26 @@ def _recognize_text(text: str) -> list:
 
 
 def _recognize_image(image_b64: str, text_hint: str = None) -> list:
-    # 尝试 LLM 多模态（需支持视觉的模型，如 gpt-4o）
+    """
+    图片识别：需要支持视觉的模型（qwen2.5vl / llava / gpt-4o 等）。
+    在 .env 里配置 VISION_MODEL 即可启用；
+    qwen3:8b 是纯文本模型，调用会失败并自动降级。
+    """
     try:
-        from openai import OpenAI
-        import config
-        client = OpenAI(api_key=config.LLM_API_KEY, base_url=config.LLM_BASE_URL)
-        resp = client.chat.completions.create(
-            model=config.LLM_MODEL,
-            messages=[{
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "识别图中所有食物并估算份量与营养。返回 JSON："
-                     '{"foods":[{"name":"","portion":"","calories":0,"protein":0,'
-                     '"fat":0,"carbs":0,"fiber":0,"sodium":0,"confidence":0.0}]} 只返回 JSON。'},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}},
-                ],
-            }],
-        )
-        data = llm.parse_json(resp.choices[0].message.content)
-        return data.get("foods", [])
+        prompt = ("识别图中所有食物，估算份量与营养。返回 JSON："
+                  '{"foods":[{"name":"","portion":"","calories":0,"protein":0,'
+                  '"fat":0,"carbs":0,"fiber":0,"sodium":0,"confidence":0.0}]} 只返回 JSON。')
+        if text_hint:
+            prompt += f" 用户补充说明：{text_hint}"
+        raw = llm.chat_image(prompt, image_b64)
+        foods = llm.parse_json(raw).get("foods", [])
+        if foods:
+            return foods
+        raise RuntimeError("模型未返回食物列表")
     except Exception:
-        # 降级：无法识图，返回提示性结果
+        # 降级：无法识图，返回提示性结果（低置信度，提醒用户手动核对）
         return [{
-            "name": text_hint or "图片食物（本地模式无法识图，请手动填写）",
+            "name": text_hint or "图片食物（当前未配置视觉模型，请手动填写）",
             "portion": "1 份",
             "calories": 500, "protein": 18.0, "fat": 15.0,
             "carbs": 70.0, "fiber": 3.0, "sodium": 600,
